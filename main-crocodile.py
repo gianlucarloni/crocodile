@@ -910,11 +910,14 @@ def validate(val_loader, model, criterion, args, logger, epoch):
 
     with torch.no_grad():
         end = time.time()
-        for i, (images, target) in enumerate(val_loader):
+        # for i, (images, target) in enumerate(val_loader):
+        for i, (images, target, target_dataset) in enumerate(val_loader): #TODO
             
             #TODO 12 Feb 2024: moving to cuda device is commented out when using Accelerator:
             images = images.cuda(non_blocking=True)
             target = target.cuda(non_blocking=True)
+            
+            target_dataset=target_dataset.cuda(non_blocking=True)
             
             # if i%3==0:
             #     print(f"valid: target in validloader: {target}")
