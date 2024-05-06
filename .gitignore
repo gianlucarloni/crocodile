@@ -1,0 +1,13 @@
+__pycache__/
+_old/
+ciclo-vidr.sh
+command_run_job.txt
+configs/
+dataset_*/
+err.err
+fix_CXRdataset_columns.py
+main-causal_gc.py
+main-debug.py
+out/
+*.out
+pretrained_models/
