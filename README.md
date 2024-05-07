@@ -25,6 +25,8 @@ As you can see, the 'sbatch' command itself launches the other bash script calle
 
 Even if your setup does not include the usage of SLURM-based queues or multi-node multi-gpu experiments, you are still able to utilize our method! Indeed, you just need to ...
 
+### Baseline
+
 ## Acknowledgement 
 
 Some previous implementations and codes inspired us to develop this project and served as a basis for the present code to a varying extent:
