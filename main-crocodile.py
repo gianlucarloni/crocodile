@@ -1,6 +1,9 @@
 '''
 Late April 2024: we try to implement what we call CROCODILE. Here, multiple datasets are used in a contrastive learning setting to attain robustness.
 In Leonardo SCRATCH, we have: dataset_chestxray14(NIH), dataset_chexpert, dataset_mimimCXR_JPG, and dataset_padchest
+
+https://github.com/gianlucarloni/crocodile
+
 '''
 import argparse
 import math
@@ -26,6 +29,10 @@ from sklearn.metrics import roc_auc_score
 import matplotlib.pyplot as plt
 
 import torch 
+##
+if torch.cuda.is_available():
+    print(f"TORCH Number of available GPUs: {torch.cuda.device_count()}")
+##
 import torch.nn as nn
 import torch.nn.parallel
 from torch.optim import lr_scheduler
@@ -51,7 +58,7 @@ from utils.config_ import get_raw_dict
 
 #
 from dataset.cxr_datasets import cate #radiological findings categories, ie, the classes
-
+# import hostlist
 #
 torch.autograd.set_detect_anomaly(True) #TODO set this to true, for debugging purposes, such as checking expoding/vanishing gradients, or NaN values within Tensors...
 #
@@ -59,8 +66,22 @@ mydir=os.path.join(os.getcwd(), 'pretrained_models') ## these are the regular Im
 torch.hub.set_dir(mydir)
 os.environ['TORCH_HOME']=mydir
 
-os.environ['MASTER_ADDR'] = 'localhost'
-os.environ['MASTER_PORT'] = '12355' #12355, 6668
+
+#TODO in multi-node multi gpu with slurm, we do not need to set this explicitly
+##### To implement the DistributedDataParallel solution in PyTorch, it is necessary to:
+##Define the environment variables linked to the master node
+# os.environ['MASTER_ADDR'] = 'localhost' #The IP address or the hostname of the node corresponding to task 0 (the first node on the node list). If you are in mono-node, the value localhost is sufficient.
+# os.environ['MASTER_PORT'] = '12355' #The number of a random port. To avoid conflicts, and by convention, we will use a port number between 10001 and 20000, such as 12355, 6668
+
+# ### Otherwise, we can make it automatic with the following code snippet:
+# hostnames = hostlist.expand_hostlist(os.environ['SLURM_JOB_NODELIST']) ## get node list from slurm
+# gpu_ids = os.environ['SLURM_STEP_GPUS'].split(",") ## get IDs of reserved GPU
+# # define MASTER_ADD & MASTER_PORT
+# os.environ['MASTER_ADDR'] = hostnames[0]
+# os.environ['MASTER_PORT'] = str(12345 + int(min(gpu_ids))) # to avoid port conflict on the same node
+# #####
+
+
 
 # default_collate_func = torch.utils.data.dataloader.default_collate
 
@@ -76,7 +97,7 @@ def parser_args():
     parser.add_argument('--dataset_dir', help='dir of dataset', default='./data')
     parser.add_argument('--img_size', default=224, type=int,
                         help='size of input images')
-    parser.add_argument('--output', default='./out/May24/{}'.format( #TODO
+    parser.add_argument('--output', default='./out/baseline/{}'.format( #TODO
         # time.strftime("%Y%m%d%H%M%S", time.localtime(time.time() + 28800))), metavar='DIR',
         time.strftime("%Y%m%d%H%M", time.localtime(time.time() + 7200))), metavar='DIR',
                         help='path to output folder')
@@ -140,10 +161,10 @@ def parser_args():
     #                     help='start ema epoch')
 
     # distribution training
-    # parser.add_argument('--world-size', default=-1, type=int,
-    #                     help='number of nodes for distributed training')
-    # parser.add_argument('--rank', default=-1, type=int,
-    #                     help='node rank for distributed training')
+    parser.add_argument('--world_size', type=int,
+                        help='number of nodes for distributed training')
+    parser.add_argument('--rank', type=int,
+                        help='node rank for distributed training')
     parser.add_argument('--dist-url', default='env://', type=str,
                         help='url used to set up distributed training')
     parser.add_argument('--seed', default=None, type=int,
@@ -210,26 +231,24 @@ def get_args():
 best_mAP_c_cap = 0 #TODO
 best_meanAUC_c_cap = 0
 
-## TODO 12 ottobre nuovo, con distributed training
-args = get_args()
-NUM_GPUS = args.number_of_gpus 
-# list_of_GPU_ids = list(args.gpus_ids)
-# list_of_GPU_ids = list(filter((",").__ne__, list_of_GPU_ids))
+## TODO May 2024: commento questa porzione e la porto dentro il __main__ in fondo (ovviamente ora la funzione def main() ha bisogno dell argomento args)
+# ## TODO 12 ottobre nuovo, con distributed training
+# args = get_args()
+# NUM_GPUS = args.number_of_gpus 
+# # list_of_GPU_ids = list(args.gpus_ids)
+# # list_of_GPU_ids = list(filter((",").__ne__, list_of_GPU_ids))
 
-if args.seed is not None:
-    random.seed(args.seed)
-    torch.manual_seed(args.seed)
-    np.random.seed(args.seed)
+# if args.seed is not None:
+#     random.seed(args.seed)
+#     torch.manual_seed(args.seed)
+#     np.random.seed(args.seed)
 
-def main(rank, world_size):
+# def main(rank, world_size):
+def main(rank, world_size, args): #TODO May 2024
 
-    print(f"MAIN - rank: {rank}, worldsize: {world_size}")
-
-    ## TODO 12 ottobre nuovo, con distributed training
-    torch.cuda.is_available() 
-    # os.environ['CUDA_VISIBLE_DEVICES'] = list_of_GPU_ids[rank]
-    args.world_size = world_size
-    args.local_rank = rank
+    ## os.environ['CUDA_VISIBLE_DEVICES'] = list_of_GPU_ids[rank]
+    # args.world_size = world_size
+    # args.local_rank = rank
     ##
 
     # if 'WORLD_SIZE' in os.environ:
@@ -249,14 +268,14 @@ def main(rank, world_size):
     #     args.rank = 0
     #     args.local_rank = 0
 
-    torch.cuda.set_device(rank)
+    # torch.cuda.set_device(rank) #TODO in multi-node multi gpu with slurm, we do not need to set this explicitly
 
     # print('| distributed init (local_rank {}): {}'.format(rank, args.dist_url), flush=True)
-    print('| distributed init (local_rank {}): {}'.format(rank, args.dist_url))
+    print(f'MAIN | Distributed init, local_rank {rank} (worldsize: {world_size}), CUDA_VISIBLE_DEVICES: {os.environ['CUDA_VISIBLE_DEVICES']}, is CUDA available:{torch.cuda.is_available()}): {args.dist_url}')
 
-    os.environ['MASTER_ADDR'] = 'localhost'
-    os.environ['MASTER_PORT'] = '12355'
-    print(f"CUDA_VISIBLE_DEVICES: {os.environ['CUDA_VISIBLE_DEVICES']}")
+    # os.environ['MASTER_ADDR'] = 'localhost' #TODO in multi-node multi gpu with slurm, we do not need to set this explicitly
+    # os.environ['MASTER_PORT'] = '12355' #TODO in multi-node multi gpu with slurm, we do not need to set this explicitly
+    # print(f"CUDA_VISIBLE_DEVICES: {os.environ['CUDA_VISIBLE_DEVICES']}")
    
 
     torch.distributed.init_process_group(backend='nccl', init_method=args.dist_url,
@@ -916,7 +935,7 @@ def validate(val_loader, model, criterion, args, logger, epoch):
             #TODO 12 Feb 2024: moving to cuda device is commented out when using Accelerator:
             images = images.cuda(non_blocking=True)
             target = target.cuda(non_blocking=True)
-            
+
             target_dataset=target_dataset.cuda(non_blocking=True)
             
             # if i%3==0:
@@ -1399,7 +1418,15 @@ def clean_state_dict(state_dict):
 
 
 if __name__ == '__main__':
-    print("Sto iniziando\n")    
+    print("Sto iniziando\n")   
+     
+    args = get_args()
 
-    world_size=args.number_of_gpus
-    mp.spawn(main, args=(world_size,), nprocs=world_size)
+    # world_size=args.number_of_gpus
+    # mp.spawn(main, args=(world_size,), nprocs=world_size) #TODO May 2024: if you use sinle(mono)-node multi-GPU it is ok to use multiprocessing.spawn
+    
+    if args.seed is not None:
+        random.seed(args.seed)
+        torch.manual_seed(args.seed)
+        np.random.seed(args.seed)
+    main(args.rank, args.world_size, args) # but when you wish to leverage multi-node multi-gpu clusters, you just call del main (DDP will do)
