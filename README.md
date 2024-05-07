@@ -31,7 +31,7 @@ Some previous implementations and codes inspired us to develop this project and 
 - Transformer and backdoor general idea from this zc2024's [preliminary code](https://github.com/zc2024/Causal_CXR)
 - Causal Medimg from my previous [repo](https://github.com/gianlucarloni/causal_medimg),
 - _Causality map_ and _Causality factor extractor_ from our previous work [(Carloni et al., 2024)](https://doi.org/10.1016/j.eswa.2024.123433) and repo [gianlucarloni/causality_conv_nets](https://github.com/gianlucarloni/causality_conv_nets).
--  
+- Multi-node multi-gpu, data parallelism, and distributed training from this[gist.github.com](https://gist.github.com/TengdaHan/1dd10d335c7ca6f13810fff41e809904), and this [www.idris.fr](http://www.idris.fr/eng/jean-zay/gpu/jean-zay-gpu-torch-multi-eng.html). 
 
 We also acknowledge the CINECA award under the ISCRA initiative, for the availability of high-performance computing resources and support
 
