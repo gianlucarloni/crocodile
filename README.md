@@ -16,4 +16,8 @@ As the name suggests, our method makes the following contributions:
 
 ## Get started with the coding
 
-We developed our training and testing scripts to fully leverage the multi-node multi-gpu infrastructure of the [LEONARDO Supercomputer](https://en.wikipedia.org/wiki/Leonardo_(supercomputer)) 
+We developed our training and testing scripts to fully leverage the multi-node multi-gpu infrastructure of the [LEONARDO Supercomputer](https://en.wikipedia.org/wiki/Leonardo_(supercomputer)). Since the execution of jobs on that system is handled by the SLURM workload manager, we'll make use of two utility bash scripts to submit our training and testing experiments. Namely, the script [sbatch_submit.sh](https://github.com/gianlucarloni/crocodile/blob/main/sbatch_submit.sh) is where you specify the 'sbatch' command with custom parameters according to your system (e.g., --nodes, --ntasks-per-node, --cpus-per-task, --gpus-per-node, etc.). As you can see, the 'sbatch' command itself launches the other bash script called [run_train.sh](https://github.com/gianlucarloni/crocodile/blob/main/run_train.sh).
+
+### Note
+
+Even if your setup does not include the usage of SLURM-based queues or multi-node multi-gpu experiments, you are still able to utilize our method! Indeed, you just need to ...
