@@ -16,11 +16,24 @@ As the name suggests, our method makes the following contributions:
 
 ## Get started with the coding
 
-We developed our training and testing scripts to fully leverage the multi-node multi-gpu infrastructure of the [LEONARDO Supercomputer](https://en.wikipedia.org/wiki/Leonardo_(supercomputer)). Since the execution of jobs on that system is handled by the SLURM workload manager, we'll make use of two utility bash scripts to submit our training and testing experiments. Namely, the script [sbatch_submit.sh](https://github.com/gianlucarloni/crocodile/blob/main/sbatch_submit.sh) is where you specify the 'sbatch' command with custom parameters according to your system (e.g., --nodes, --ntasks-per-node, --cpus-per-task, --gpus-per-node, etc.). As you can see, the 'sbatch' command itself launches the other bash script called [run_train.sh](https://github.com/gianlucarloni/crocodile/blob/main/run_train.sh).
+We developed our training and testing scripts to fully leverage the multi-node multi-gpu infrastructure of the [LEONARDO Supercomputer](https://en.wikipedia.org/wiki/Leonardo_(supercomputer)). Since the execution of jobs on that system is handled by the SLURM workload manager, we'll make use of two utility bash scripts to submit our training and testing experiments.
+
+Namely, the script [sbatch_submit.sh](https://github.com/gianlucarloni/crocodile/blob/main/sbatch_submit.sh) is where you specify the 'sbatch' command with custom parameters according to your system (e.g., --nodes, --ntasks-per-node, --cpus-per-task, --gpus-per-node, etc.).
+As you can see, the 'sbatch' command itself launches the other bash script called [run_train.sh](https://github.com/gianlucarloni/crocodile/blob/main/run_train.sh), which is where the python script for training is executed with the desired input arguments.
 
 ### Note
 
 Even if your setup does not include the usage of SLURM-based queues or multi-node multi-gpu experiments, you are still able to utilize our method! Indeed, you just need to ...
+
+# Acknowledgement 
+
+Some previous implementations and codes inspired us to develop this project and served as a basis for the present code to a varying extent:
+- Transformer and backdoor general idea from this zc2024's [preliminary code](https://github.com/zc2024/Causal_CXR)
+- Causal Medimg from my previous [repo](https://github.com/gianlucarloni/causal_medimg),
+- _Causality map_ and _Causality factor extractor_ from our previous work [(Carloni et al., 2024)](https://doi.org/10.1016/j.eswa.2024.123433) and repo [gianlucarloni/causality_conv_nets](https://github.com/gianlucarloni/causality_conv_nets).
+-  
+
+We also acknowledge the CINECA award under the ISCRA initiative, for the availability of high-performance computing resources and support
 
 # Cite
 
