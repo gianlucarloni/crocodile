@@ -271,7 +271,7 @@ def main(rank, world_size, args): #TODO May 2024
     # torch.cuda.set_device(rank) #TODO in multi-node multi gpu with slurm, we do not need to set this explicitly
 
     # print('| distributed init (local_rank {}): {}'.format(rank, args.dist_url), flush=True)
-    print(f'MAIN | Distributed init, local_rank {rank} (worldsize: {world_size}), CUDA_VISIBLE_DEVICES: {os.environ['CUDA_VISIBLE_DEVICES']}, is CUDA available:{torch.cuda.is_available()}): {args.dist_url}')
+    print(f'MAIN | Distributed init, local_rank {rank} (worldsize: {world_size}), CUDA_VISIBLE_DEVICES: {os.environ["CUDA_VISIBLE_DEVICES"]}, is CUDA available:{torch.cuda.is_available()}): {args.dist_url}')
 
     # os.environ['MASTER_ADDR'] = 'localhost' #TODO in multi-node multi gpu with slurm, we do not need to set this explicitly
     # os.environ['MASTER_PORT'] = '12355' #TODO in multi-node multi gpu with slurm, we do not need to set this explicitly
@@ -284,7 +284,7 @@ def main(rank, world_size, args): #TODO May 2024
     cudnn.benchmark = True
 
     os.makedirs(args.output, exist_ok=True)
-    logger = setup_logger(output=args.output, distributed_rank=dist.get_rank(), color=True, name="CROCODILE")
+    logger = setup_logger(output=args.output, distributed_rank=dist.get_rank(), color=False, name="CROCODILE")
 
     
     logger.info("Command: " + ' '.join(sys.argv))

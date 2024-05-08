@@ -2,7 +2,7 @@ import torchvision.transforms as transforms
 from dataset.nihdataset import NIHDataset
 from dataset.cxr_datasets import CXRDataset
 # from utils.cutout import CutoutPIL_
-from randaugment import RandAugment
+# from randaugment import RandAugment
 import argparse
 
 def parser_args():

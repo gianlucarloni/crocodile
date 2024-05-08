@@ -3,27 +3,26 @@ import functools
 import logging
 import os
 import sys
-from termcolor import colored
+# from termcolor import colored
 
+# class _ColorfulFormatter(logging.Formatter):
+#     def __init__(self, *args, **kwargs):
+#         self._root_name = kwargs.pop("root_name") + "."
+#         self._abbrev_name = kwargs.pop("abbrev_name", "")
+#         if len(self._abbrev_name):
+#             self._abbrev_name = self._abbrev_name + "."
+#         super(_ColorfulFormatter, self).__init__(*args, **kwargs)
 
-class _ColorfulFormatter(logging.Formatter):
-    def __init__(self, *args, **kwargs):
-        self._root_name = kwargs.pop("root_name") + "."
-        self._abbrev_name = kwargs.pop("abbrev_name", "")
-        if len(self._abbrev_name):
-            self._abbrev_name = self._abbrev_name + "."
-        super(_ColorfulFormatter, self).__init__(*args, **kwargs)
-
-    def formatMessage(self, record):
-        record.name = record.name.replace(self._root_name, self._abbrev_name)
-        log = super(_ColorfulFormatter, self).formatMessage(record)
-        if record.levelno == logging.WARNING:
-            prefix = colored("WARNING", "red", attrs=["blink"])
-        elif record.levelno == logging.ERROR or record.levelno == logging.CRITICAL:
-            prefix = colored("ERROR", "red", attrs=["blink", "underline"])
-        else:
-            return log
-        return prefix + " " + log
+#     def formatMessage(self, record):
+#         record.name = record.name.replace(self._root_name, self._abbrev_name)
+#         log = super(_ColorfulFormatter, self).formatMessage(record)
+#         if record.levelno == logging.WARNING:
+#             prefix = colored("WARNING", "red", attrs=["blink"])
+#         elif record.levelno == logging.ERROR or record.levelno == logging.CRITICAL:
+#             prefix = colored("ERROR", "red", attrs=["blink", "underline"])
+#         else:
+#             return log
+#         return prefix + " " + log
 
 
 # so that calling setup_logger multiple times won't add many handlers
@@ -59,12 +58,13 @@ def setup_logger(
         ch = logging.StreamHandler(stream=sys.stdout)
         ch.setLevel(logging.DEBUG)
         if color:
-            formatter = _ColorfulFormatter(
-                colored("[%(asctime)s.%(msecs)03d]: ", "green") + "%(message)s",
-                datefmt="%m/%d %H:%M:%S",
-                root_name=name,
-                abbrev_name=str(abbrev_name),
-            )
+            # formatter = _ColorfulFormatter(
+            #     colored("[%(asctime)s.%(msecs)03d]: ", "green") + "%(message)s",
+            #     datefmt="%m/%d %H:%M:%S",
+            #     root_name=name,
+            #     abbrev_name=str(abbrev_name),
+            # )
+            esci
         else:
             formatter = plain_formatter
         ch.setFormatter(formatter)
