@@ -11,3 +11,9 @@ main-debug.py
 out/
 *.out
 pretrained_models/
+code/out/
+.main-crocodile.py.swp
+_old_and_misc/
+main-crocodile_OriginalLEO.py
+python_err.log
+python_out.log
