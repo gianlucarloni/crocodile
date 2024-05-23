@@ -1,4 +1,4 @@
-# CROCODILE 🐊 Causality aids RObustness via COntrastive DIsentangled LEarning for generalizable and explainable AI
+# *CROCODILE* 🐊: *C*ausality aids *RO*bustness via *CO*ntrastive *DI*sentangled *LE*arning for generalizable and explainable AI
 
 This project is the code base for our [paper](placeholder). Please, ...
 
