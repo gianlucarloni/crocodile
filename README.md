@@ -12,15 +12,14 @@ This project is the code base for our [paper](placeholder), where we propose a n
 
 *Due to domain shift, deep learning image classifiers perform poorly when applied to a domain different from the training one. For instance, a classifier trained on chest X-ray (CXR) images from one hospital may not generalize to images from another hospital due to variations in scanner settings or patient characteristics. In this paper, we introduce our CROCODILE framework, showing how tools from causality can foster a model’s robustness to domain shift via feature disentanglement, contrastive learning losses, and the injection of prior knowledge. This way, the model relies less on spurious correlations, learns the mechanism bringing from images to prediction better, and outperforms baselines on out-of-distribution (OOD) data. We apply our method to multi-label lung disease classification from CXRs, utilizing over 750000 images from four datasets. Our bias-mitigation method improves domain generalization and fairness, broadening the applicability and reliability of deep learning models for a safer medical image analysis.*
 
+## Impact
+
+*The results of our in-distribution (ID) and out-of-distribution (OOD) data investigations reveal our method is behind its ablated versions and the competing method on i.i.d. data (ID) while is the best-performing model on the external never-before-seen data (OOD). This important result points to a necessary trade-off between in-domain accuracy and out-of-domain robustness on real-world data, supporting recent work. Notably, our method is the most effective in reducing the ID-to-OOD drop in performance. By leveraging causal tools, disentanglement, contrastive learning, and prior knowledge, it learns a better mechanism from image to prediction, relies less on spurious correlations, and breaks the boundaries across domains. Our bias-mitigation proposal is general and can be applied to tackle domain shift bias in other computer-aided diagnosis applications, fostering a safer and more generalizable medical AI.*
+
 ## Idea
 As its acronym suggests, with our method we make the following contributions:
 
 :hammer: latent causal intervention
-
-- *Causality*: since we build on the causal theory and implement the backdoor adjustment to break the connection between the prediction target (e.g., disease label) and spurious features (e.g., lead letters in the corner of a chest X-ray image). Moreover, we propose to use the _causality map_ and _causality factor extractor_ from our previous work [(Carloni et al., 2024)](https://doi.org/10.1016/j.eswa.2024.123433) and repo [gianlucarloni/causality_conv_nets](https://github.com/gianlucarloni/causality_conv_nets) during the stratification and addition phase of the backdoor adjustment.
-- *RObustness*: since our method make the model learn the true _causal_ features that determine the outcome, disregarding the spurious non-causal features
-- *COntrastive*: since we frame our learning setting as a contrastive learning schema leveraging images from different source datasets. This way, we are able to impose crucial consistency/similarity constraints to the latent representation of instances (i) coming from the same dataset and with same diagnosis label, (ii) coming from the same dataset but with different diagnoses, (iii) sharing the same diagnosis label but coming from different datasets, and (iv) coming from different datasets and with different diagnoses.
-- *DIsentangled*: since we build on the multi-head attention meccanism of the Transformer and modify it to return a set of attention weights _A_ along with its negated _(1-A)_. We'd use the former to compute the causal features and the latter to compute the non-causal (spurious) features. This way, we attain feature disentanglement with a more semantically defined latent space. 
 
 ## Get started with the coding
 
