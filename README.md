@@ -1,10 +1,21 @@
-# *CROCODILE* 🐊: *C*ausality aids *RO*bustness via *CO*ntrastive *DI*sentangled *LE*arning for generalizable and explainable AI
+# CROCODILE 🐊: Causality aids RObustness via COntrastive DIsentangled LEarning
 
-This project is the code base for our [paper](placeholder). Please, ...
+This project is the code base for our [paper](placeholder), where we propose a new deep learning framework to tackle domain shift bias on medical image classifiers.
 
-## Summary (Abstract)
+:computer: Go to [Get started](placeholderline), if you want to use our code straight away. 
 
+:bulb: Go to [Idea]() to read about the core ideas behind our proposal.
+
+:star: Go to [Cite]() to get the citation format for our work, if you have found it useful for you research
+
+## Abstract
+
+*Due to domain shift, deep learning image classifiers perform poorly when applied to a domain different from the training one. For instance, a classifier trained on chest X-ray (CXR) images from one hospital may not generalize to images from another hospital due to variations in scanner settings or patient characteristics. In this paper, we introduce our CROCODILE framework, showing how tools from causality can foster a model’s robustness to domain shift via feature disentanglement, contrastive learning losses, and the injection of prior knowledge. This way, the model relies less on spurious correlations, learns the mechanism bringing from images to prediction better, and outperforms baselines on out-of-distribution (OOD) data. We apply our method to multi-label lung disease classification from CXRs, utilizing over 750000 images from four datasets. Our bias-mitigation method improves domain generalization and fairness, broadening the applicability and reliability of deep learning models for a safer medical image analysis.*
+
+## Idea
 As its acronym suggests, with our method we make the following contributions:
+
+:hammer: latent causal intervention
 
 - *Causality*: since we build on the causal theory and implement the backdoor adjustment to break the connection between the prediction target (e.g., disease label) and spurious features (e.g., lead letters in the corner of a chest X-ray image). Moreover, we propose to use the _causality map_ and _causality factor extractor_ from our previous work [(Carloni et al., 2024)](https://doi.org/10.1016/j.eswa.2024.123433) and repo [gianlucarloni/causality_conv_nets](https://github.com/gianlucarloni/causality_conv_nets) during the stratification and addition phase of the backdoor adjustment.
 - *RObustness*: since our method make the model learn the true _causal_ features that determine the outcome, disregarding the spurious non-causal features
@@ -24,6 +35,9 @@ As you can see, the 'sbatch' command itself launches the other bash script calle
 ### Note
 
 Even if your setup does not include the usage of SLURM-based queues or multi-node multi-gpu experiments, you are still able to utilize our method! Indeed, you just need to ...
+
+
+:wrench: Requirements 
 
 ### Baseline
 
