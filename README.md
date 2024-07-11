@@ -4,9 +4,9 @@ This project is the code base for our [paper](placeholder), where we propose a n
 
 :computer: Go to [Get started](https://github.com/gianlucarloni/crocodile/tree/main#get-started-with-the-coding), if you want to use our code straight away. 
 
-:bulb: Go to [Idea]() to read about the core ideas behind our proposal.
+:bulb: Go to [Idea](https://github.com/gianlucarloni/crocodile/tree/main?tab=readme-ov-file#idea) to read about the core ideas behind our proposal.
 
-:star: Go to [Cite]() to get the citation format for our work, if you have found it useful for you research
+:star: Go to [Cite](https://github.com/gianlucarloni/crocodile/tree/main?tab=readme-ov-file#cite) to get the citation format for our work, if you have found it useful for you research
 
 ## Abstract
 
@@ -20,10 +20,7 @@ As its acronym suggests, with our method we make the following contributions:
 - *Causality*: since we build on the causal theory and implement the backdoor adjustment to break the connection between the prediction target (e.g., disease label) and spurious features (e.g., lead letters in the corner of a chest X-ray image). Moreover, we propose to use the _causality map_ and _causality factor extractor_ from our previous work [(Carloni et al., 2024)](https://doi.org/10.1016/j.eswa.2024.123433) and repo [gianlucarloni/causality_conv_nets](https://github.com/gianlucarloni/causality_conv_nets) during the stratification and addition phase of the backdoor adjustment.
 - *RObustness*: since our method make the model learn the true _causal_ features that determine the outcome, disregarding the spurious non-causal features
 - *COntrastive*: since we frame our learning setting as a contrastive learning schema leveraging images from different source datasets. This way, we are able to impose crucial consistency/similarity constraints to the latent representation of instances (i) coming from the same dataset and with same diagnosis label, (ii) coming from the same dataset but with different diagnoses, (iii) sharing the same diagnosis label but coming from different datasets, and (iv) coming from different datasets and with different diagnoses.
-- *DIsentangled*: since we build on the multi-head attention meccanism of the Transformer and modify it to return a set of attention weights _A_ along with its negated _(1-A)_. We'd use the former to compute the causal features and the latter to compute the non-causal (spurious) features. This way, we attain feature disentanglement with a more semantically defined latent space.
-- *generalizable*: since we showed how our method helps in improving Domain Generalization (DG): when the data distribution changes from training and deployment scenarios, the model can behave more consistently across new data.
-- *explainable*: since ...
- 
+- *DIsentangled*: since we build on the multi-head attention meccanism of the Transformer and modify it to return a set of attention weights _A_ along with its negated _(1-A)_. We'd use the former to compute the causal features and the latter to compute the non-causal (spurious) features. This way, we attain feature disentanglement with a more semantically defined latent space. 
 
 ## Get started with the coding
 
@@ -49,7 +46,7 @@ Some previous implementations and codes inspired us to develop this project and 
 - _Causality map_ and _Causality factor extractor_ from our previous work [(Carloni et al., 2024)](https://doi.org/10.1016/j.eswa.2024.123433) and repo [gianlucarloni/causality_conv_nets](https://github.com/gianlucarloni/causality_conv_nets).
 - Multi-node multi-gpu, data parallelism, and distributed training from this [gist.github.com](https://gist.github.com/TengdaHan/1dd10d335c7ca6f13810fff41e809904), and this [www.idris.fr](http://www.idris.fr/eng/jean-zay/gpu/jean-zay-gpu-torch-multi-eng.html). 
 
-We also acknowledge the CINECA award under the ISCRA initiative, for the availability of high-performance computing resources and support
+We also acknowledge the CINECA award under the ISCRA initiative, for the availability of high-performance computing resources and support.
 
 ## Cite
 
