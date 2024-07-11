@@ -119,7 +119,7 @@ class AsymmetricLossOptimized(nn.Module):
 
         # _loss = _loss / y.size(1) * 1000
         #TODO commented out this line, why dividing for the number of classes and then scaling by 1k?
-        _loss = _loss / y.size(1) * 10 #TODO 9 may, replaced the multiplication by 1000 with 10
+        _loss = _loss / y.size(1) * 100 #TODO 9 may, replaced the multiplication by 1000 with 100
         return _loss
 
 
@@ -415,3 +415,74 @@ class CODI_MiniBatch_Loss(nn.Module):
                 L_mini_batch += torch.nan_to_num(self.mse(z[label_idx] +1e-8, avg_z.unsqueeze(0).repeat(label_idx.size(0), 1, 1))) # here, we have an additional axis for the embedding/representation (with size hidden_dim, such as 2048)                 
 
         return L_mini_batch
+
+class Task_Prior_Loss(nn.Module):
+    def __init__(self, categories=['Atelectasis', 'Cardiomegaly', 'Consolidation', 'Edema', 'Effusion', 'Lung Opacity', 'No Finding', 'Pneumonia', 'Pneumothorax'], batch_size=8, device='cuda'):
+        '''
+        We conceive a loss term to inject prior (medical) knowledge into the model.
+        
+        Specifically for chest x-ray (CXR) findings, we know from the literature that not all the possible finings are independent.
+        By constructing a causal graph between the findings, we can model the cause-effect of a CXR finding on another.
+        Based on medical literature and expert knowledge, we built the following causal graph:
+            INSERT GOOGLE DRIVE LINK HERE
+        and consequently we hypothesize the following cause-effect relationships among the categories:
+        
+        To operationalize that, we propose exploiting the causality_map concetp from our previous works:
+            1- "Carloni, G., & Colantonio, S. (2024). Exploiting causality signals in medical images: A pilot study with empirical results. Expert Systems with Applications, 123433."
+            2- "Carloni, G., Pachetti, E., & Colantonio, S. (2023). Causality-Driven One-Shot Learning for Prostate Cancer Grading from MRI. In Proceedings of the IEEE/CVF International Conference on Computer Vision (pp. 2616-2624)."        
+        and compare it against a ground-truth causality map via an MSE Loss.
+
+        That ground-truth causality map is constructed in a way that true causal pairs of findings, such as Pneumonia->Consolidation, have Probability value =1
+        while to-avoid relationship have low probability, i.e., zero.
+
+        Independently from the magnitude and validity of the specified cause-effect relationships, which may depend on the expert/literature consulted,
+        our method shows how you could encode prior knowledge into the model, thus guiding its learning process.
+        Therefore, we empower future researchers with the "HOW", by which they could encode knowledge of different CXR findings (the "WHAT"). 
+        '''
+        super(Task_Prior_Loss, self).__init__()
+        self.batch_size = batch_size
+        self.device = device
+
+        self.categories = categories #E.g., the chest x-ray findings (medical task classes)
+        # dict_int_to_cate = {i: categories[i] for i in range(len(categories))}
+        dict_cate_to_int = {category: i for i, category in enumerate(self.categories)}
+
+        cmap_Q_groundTruth = torch.zeros(size=(len(self.categories), len(self.categories)), device=self.device)
+
+        ## By construction, the following five classes constitute lung opacities in the medical jargon, so we set their causal score to 1.0 w.r.t. lung opacity
+        cmap_Q_groundTruth[dict_cate_to_int['Atelectasis'], dict_cate_to_int['Lung Opacity']] = 1.0     # Ate--> LOp
+        cmap_Q_groundTruth[dict_cate_to_int['Consolidation'], dict_cate_to_int['Lung Opacity']] = 1.0   # Con--> LOp
+        cmap_Q_groundTruth[dict_cate_to_int['Edema'], dict_cate_to_int['Lung Opacity']] = 1.0 # Ede--> LOp
+        cmap_Q_groundTruth[dict_cate_to_int['Effusion'], dict_cate_to_int['Lung Opacity']] = 1.0 # Eff--> LOp
+        cmap_Q_groundTruth[dict_cate_to_int['Pneumonia'], dict_cate_to_int['Lung Opacity']] = 1.0 # Pne--> LOp
+        # Conversely, the propability of having specifically one of those five conditions if osberving lung opacity is much lower, since there are possibly 4 other concurrent causes, so we set the value to 1/5=0.2
+        cmap_Q_groundTruth[dict_cate_to_int['Lung Opacity'], dict_cate_to_int['Atelectasis']] = 0.2
+        cmap_Q_groundTruth[dict_cate_to_int['Lung Opacity'], dict_cate_to_int['Consolidation']] = 0.2
+        cmap_Q_groundTruth[dict_cate_to_int['Lung Opacity'], dict_cate_to_int['Edema']] = 0.2
+        cmap_Q_groundTruth[dict_cate_to_int['Lung Opacity'], dict_cate_to_int['Effusion']] = 0.2
+        cmap_Q_groundTruth[dict_cate_to_int['Lung Opacity'], dict_cate_to_int['Pneumonia']] = 0.2
+        
+        ## Known relationships with high score:
+        cmap_Q_groundTruth[dict_cate_to_int['Pneumothorax'], dict_cate_to_int['Atelectasis']] = 0.85 # Pne--> Ate
+        cmap_Q_groundTruth[dict_cate_to_int['Pneumonia'], dict_cate_to_int['Consolidation']] = 0.7 # Pne--> Con
+        cmap_Q_groundTruth[dict_cate_to_int['Edema'], dict_cate_to_int['Consolidation']] = 0.65 # Ede--> Con
+        cmap_Q_groundTruth[dict_cate_to_int['Effusion'], dict_cate_to_int['Atelectasis']] = 0.5 # Eff--> Ate
+        cmap_Q_groundTruth[dict_cate_to_int['Consolidation'], dict_cate_to_int['Atelectasis']] = 0.40   # Con--> Ate
+        
+        ## Indirect or rare effects with low scores
+        cmap_Q_groundTruth[dict_cate_to_int['Pneumonia'], dict_cate_to_int['Effusion']] = 0.25 # Pne--> Eff
+        cmap_Q_groundTruth[dict_cate_to_int['Consolidation'], dict_cate_to_int['Effusion']] = 0.20       # Con--> Eff
+        cmap_Q_groundTruth[dict_cate_to_int['Cardiomegaly'], dict_cate_to_int['Atelectasis']] = 0.10    # Car--> Ate
+        cmap_Q_groundTruth[dict_cate_to_int['Pneumonia'], dict_cate_to_int['Edema']] = 0.05    
+        
+        
+        self.cmap_groundTruth = torch.repeat_interleave(torch.unsqueeze(cmap_Q_groundTruth, dim=0), repeats=self.batch_size, dim=0)
+        
+        self.mse = nn.MSELoss()
+
+    
+    def __str__(self):
+        return f"Task_Prior_Loss over categories: ({self.categories})"
+
+    def forward(self, cmap):     
+        return self.mse(cmap + 1e-8, self.cmap_groundTruth) #plus epsilon for stability issues.

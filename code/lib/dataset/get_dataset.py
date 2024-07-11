@@ -1,6 +1,6 @@
 import torchvision.transforms as transforms
 from dataset.nihdataset import NIHDataset
-from dataset.cxr_datasets import CXRDataset
+from dataset.cxr_datasets import CXRDataset, CXRDataset_OOD
 # from utils.cutout import CutoutPIL_
 # from randaugment import RandAugment
 import argparse
@@ -73,44 +73,7 @@ def get_datasets(args):
 
 
 
-
-
-
-    if not args.useCrocodile:
-        if args.dataname == 'nih':
-            dataset_dir = args.dataset_dir
-            # nih_transform = transforms.Compose([
-            #     transforms.Resize((args.img_size, args.img_size)),
-            #     transforms.ToTensor(),
-            #     # transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])
-            # ])
-            # TODO aprile 2024 replaced the above nih_transform with the new one that adjusts the contrast and normalizes:
-            nih_transform = transforms.Compose([
-                transforms.Resize((args.img_size, args.img_size)),
-                # AdjustContrast(),  # Custom contrast adjustment, april 2024    
-                transforms.ToTensor(), #0...1 range
-                # transforms.Normalize((0.5,0.5,0.5), (0.5,0.5,0.5)) #-1...1 range to speed up and stabilize the training process 
-                transforms.Normalize((0.5, ), (0.5, )) #TODO one channel grayscale images instead
-                
-            ]) 
-            
-
-            train_dataset = NIHDataset(
-                data_path = dataset_dir,
-                input_transform = nih_transform,
-                train=True
-            )
-            val_dataset = NIHDataset(
-                data_path=dataset_dir,
-                input_transform = nih_transform,
-                train=False
-            )
-        else:
-            raise NotImplementedError("Unknown dataname %s" % args.dataname)
-
-    
-    else: # Crocodile
-    
+    if args.evaluate and not args.tSNE: #TEST on OOD
         dataset_dir = args.dataset_dir #here, it is the parent folder containing the multiple dataset folders
 
         transform_ResizeAdjustNormalize = transforms.Compose([
@@ -120,88 +83,176 @@ def get_datasets(args):
             # transforms.Normalize((0.5,0.5,0.5), (0.5,0.5,0.5)) #-1...1 range to speed up and stabilize the training process 
             transforms.Normalize((0.5, ), (0.5, )) #TODO one channel grayscale images instead
         ]) 
+
+        train_dataset = val_dataset = None
         
-        ## We will create several different datasets and then combine them to constitute the training set of images.
-        # Actually, we could utilize a huge CSV file which contains all those training instances (each in its respective path)
-        # And thus utilize a second big CSV file consisting of the validation instances from the same datasets.
+        test_dataset = CXRDataset_OOD(
+                    data_path= os.path.join(dataset_dir,'dataset_mimicCXR_JPG'),
+                    input_transform = transform_ResizeAdjustNormalize,
+                    train=True
+                )   
+    elif (args.evaluate and args.tSNE) or not args.evaluate: # TRAIN and VALIDATE
 
-        ## However, the different datasets might need different handling and preprocessing steps, so we keep modularity and load them separately
+        # if not args.useCrocodile: #old version, only caumed
+        #     if args.dataname == 'nih':
+        #         dataset_dir = args.dataset_dir
+        #         # nih_transform = transforms.Compose([
+        #         #     transforms.Resize((args.img_size, args.img_size)),
+        #         #     transforms.ToTensor(),
+        #         #     # transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])
+        #         # ])
+        #         # TODO aprile 2024 replaced the above nih_transform with the new one that adjusts the contrast and normalizes:
+        #         nih_transform = transforms.Compose([
+        #             transforms.Resize((args.img_size, args.img_size)),
+        #             # AdjustContrast(),  # Custom contrast adjustment, april 2024    
+        #             transforms.ToTensor(), #0...1 range
+        #             # transforms.Normalize((0.5,0.5,0.5), (0.5,0.5,0.5)) #-1...1 range to speed up and stabilize the training process 
+        #             transforms.Normalize((0.5, ), (0.5, )) #TODO one channel grayscale images instead
+                    
+        #         ]) 
+                
 
-        # At inference/test/deployment time, we will utilize an external dataset (never before seen dataset) to assess domain generalization
+        #         train_dataset = NIHDataset(
+        #             data_path = dataset_dir,
+        #             input_transform = nih_transform,
+        #             train=True
+        #         )
+        #         val_dataset = NIHDataset(
+        #             data_path=dataset_dir,
+        #             input_transform = nih_transform,
+        #             train=False
+        #         )
+        #     else:
+        #         raise NotImplementedError("Unknown dataname %s" % args.dataname)
+
+
+
+
         
-        # Dataset NIH CXR 14
-        train_dataset_nihCXR14 = CXRDataset(
-            data_path = os.path.join(dataset_dir,'dataset_chestxray14'),
-            input_transform = transform_ResizeAdjustNormalize,
-            train=True
-        )
-        print(f"Creato train_dataset_nihCXR14")
-        val_dataset_nihCXR14 = CXRDataset(
-            data_path= os.path.join(dataset_dir,'dataset_chestxray14'),
-            input_transform = transform_ResizeAdjustNormalize,
-            train=False
-        )
-        print(f"Creato val_dataset_nihCXR14")
+        # else: # Our Crocodile proposal
+        
+            dataset_dir = args.dataset_dir #here, it is the parent folder containing the multiple dataset folders
 
-        # Dataset PadChest
-        train_dataset_padchest = CXRDataset(
-            data_path= os.path.join(dataset_dir,'dataset_padchest'),
-            input_transform = transform_ResizeAdjustNormalize,
-            train=True
-        )
-        print(f"Creato train_dataset_padchest")
-        val_dataset_padchest = CXRDataset(
-            data_path= os.path.join(dataset_dir,'dataset_padchest'),
-            input_transform = transform_ResizeAdjustNormalize,
-            train=False
-        )
-        print(f"Creato val_dataset_padchest")
+            transform_ResizeAdjustNormalize = transforms.Compose([
+                transforms.Resize((args.img_size, args.img_size)),
+                # AdjustContrast(),  # Custom contrast adjustment, april 2024    
+                transforms.ToTensor(), #0...1 range
+                # transforms.Normalize((0.5,0.5,0.5), (0.5,0.5,0.5)) #-1...1 range to speed up and stabilize the training process 
+                transforms.Normalize((0.5, ), (0.5, )) #TODO one channel grayscale images instead
+            ]) 
+            
+            ## TODO
+            if args.tSNE_selfreportedrace:
+                # Dataset CheXpert
+                train_dataset_chexpert = CXRDataset(
+                    data_path= os.path.join(dataset_dir,'dataset_chexpert'),
+                    input_transform = transform_ResizeAdjustNormalize,
+                    train=True,
+                    use_tSNE_selfreportedrace=True,
+                    adjustContrast=args.adjustContrast
+                )
+                print(f"Creato train_dataset_chexpert")
+                print("len(train_dataset):", len(train_dataset)) 
+                val_dataset_chexpert = CXRDataset(
+                    data_path= os.path.join(dataset_dir,'dataset_chexpert'),
+                    input_transform = transform_ResizeAdjustNormalize,
+                    train=False,
+                    use_tSNE_selfreportedrace=True,
+                    adjustContrast=args.adjustContrast
+                )
+                print(f"Creato val_dataset_chexpert")              
+                print("len(val_dataset):", len(val_dataset))
 
-        # Dataset CheXpert
-        train_dataset_chexpert = CXRDataset(
-            data_path= os.path.join(dataset_dir,'dataset_chexpert'),
-            input_transform = transform_ResizeAdjustNormalize,
-            train=True
-        )
-        print(f"Creato train_dataset_chexpert")
-        val_dataset_chexpert = CXRDataset(
-            data_path= os.path.join(dataset_dir,'dataset_chexpert'),
-            input_transform = transform_ResizeAdjustNormalize,
-            train=False
-        )
-        print(f"Creato val_dataset_chexpert")
+                data_set = ConcatDataset([train_dataset_chexpert,val_dataset_chexpert])
+                print("len(data_set):", len(data_set)) 
+
+                return data_set, None, None
+            ##
 
 
-        ## Dataset MIMIC-CXR-2.0
-        # train_dataset_mimic = CXRDataset(
-        #     data_path= os.path.join(dataset_dir,'dataset_mimicCXR_JPG'),
-        #     input_transform = transform_ResizeAdjustNormalize,
-        #     train=True
-        # )
-        # val_dataset_mimic = CXRDataset(
-        #     data_path= os.path.join(dataset_dir,'dataset_mimicCXR_JPG'),
-        #     input_transform = transform_ResizeAdjustNormalize,
-        #     train=False
-        # )
+            ## We will create several different datasets and then combine them to constitute the training set of images.
+            # Actually, we could utilize a huge CSV file which contains all those training instances (each in its respective path)
+            # And thus utilize a second big CSV file consisting of the validation instances from the same datasets.
 
-        # Dataset VinDr-CXR (Vietnam, physionet.org)
-        # we might use it as the external dataset for deployment test
-    
-    # else:
-    #     raise NotImplementedError("Unknown dataname %s" % args.dataname)
+            ## However, the different datasets might need different handling and preprocessing steps, so we keep modularity and load them separately
+
+            # At inference/test/deployment time, we will utilize an external dataset (never before seen dataset) to assess domain generalization
+            
+            # Dataset NIH CXR 14
+            train_dataset_nihCXR14 = CXRDataset(
+                data_path = os.path.join(dataset_dir,'dataset_chestxray14'),
+                input_transform = transform_ResizeAdjustNormalize,
+                train=True,
+                adjustContrast=args.adjustContrast
+            )
+            print(f"Creato train_dataset_nihCXR14")
+            val_dataset_nihCXR14 = CXRDataset(
+                data_path= os.path.join(dataset_dir,'dataset_chestxray14'),
+                input_transform = transform_ResizeAdjustNormalize,
+                train=False,
+                adjustContrast=args.adjustContrast
+            )
+            print(f"Creato val_dataset_nihCXR14")
+
+            # Dataset PadChest
+            train_dataset_padchest = CXRDataset(
+                data_path= os.path.join(dataset_dir,'dataset_padchest'),
+                input_transform = transform_ResizeAdjustNormalize,
+                train=True,
+                adjustContrast=args.adjustContrast
+            )
+            print(f"Creato train_dataset_padchest")
+            val_dataset_padchest = CXRDataset(
+                data_path= os.path.join(dataset_dir,'dataset_padchest'),
+                input_transform = transform_ResizeAdjustNormalize,
+                train=False,
+                adjustContrast=args.adjustContrast
+            )
+            print(f"Creato val_dataset_padchest")
+
+            # Dataset CheXpert
+            train_dataset_chexpert = CXRDataset(
+                data_path= os.path.join(dataset_dir,'dataset_chexpert'),
+                input_transform = transform_ResizeAdjustNormalize,
+                train=True,
+                adjustContrast=args.adjustContrast
+            )
+            print(f"Creato train_dataset_chexpert")
+            val_dataset_chexpert = CXRDataset(
+                data_path= os.path.join(dataset_dir,'dataset_chexpert'),
+                input_transform = transform_ResizeAdjustNormalize,
+                train=False,
+                adjustContrast=args.adjustContrast
+            )
+            print(f"Creato val_dataset_chexpert")
 
 
+            ## Dataset MIMIC-CXR-2.0
+            # train_dataset_mimic = CXRDataset(
+            #     data_path= os.path.join(dataset_dir,'dataset_mimicCXR_JPG'),
+            #     input_transform = transform_ResizeAdjustNormalize,
+            #     train=True
+            # )
+            # val_dataset_mimic = CXRDataset(
+            #     data_path= os.path.join(dataset_dir,'dataset_mimicCXR_JPG'),
+            #     input_transform = transform_ResizeAdjustNormalize,
+            #     train=False
+            # )
 
-    # print(val_dataset_nihCXR14.getHead())
-    # print(val_dataset_padchest.getHead())
-    # print(val_dataset_chexpert.getHead())
-    # Combine datasets
-    train_dataset = ConcatDataset([train_dataset_nihCXR14, train_dataset_padchest, train_dataset_chexpert])#, train_dataset_mimic])
-    val_dataset = ConcatDataset([val_dataset_nihCXR14, val_dataset_padchest, val_dataset_chexpert])#, val_dataset_mimic])
+            # Dataset VinDr-CXR (Vietnam, physionet.org)
+            # we might use it as the external dataset for deployment test
+        
+        # else:
+        #     raise NotImplementedError("Unknown dataname %s" % args.dataname)
 
-    print("len(train_dataset):", len(train_dataset)) 
-    print("len(val_dataset):", len(val_dataset))
 
-    # print(val_dataset.getHead())
-    
-    return train_dataset, val_dataset
+        # Combine datasets
+            train_dataset = ConcatDataset([train_dataset_nihCXR14, train_dataset_padchest, train_dataset_chexpert])#, train_dataset_mimic])
+            val_dataset = ConcatDataset([val_dataset_nihCXR14, val_dataset_padchest, val_dataset_chexpert])#, val_dataset_mimic])
+
+            print("len(train_dataset):", len(train_dataset)) 
+            print("len(val_dataset):", len(val_dataset))
+
+            test_dataset=None
+
+    return train_dataset, val_dataset, test_dataset

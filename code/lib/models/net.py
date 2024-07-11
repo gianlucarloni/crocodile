@@ -136,12 +136,71 @@ class Attention(nn.Module):
         y = self.relu(x1 + x2 + x3)
         return y
 
+class CausalityMapBlock(nn.Module):
+    def __init__(self):
+        '''
+        Block to compute the causality maps of the deep neural network's latent features
+        From papers:
+            1- "Carloni, G., & Colantonio, S. (2024). Exploiting causality signals in medical images: A pilot study with empirical results. Expert Systems with Applications, 123433."
+            
+            2- "Carloni, G., Pachetti, E., & Colantonio, S. (2023). Causality-Driven One-Shot Learning for Prostate Cancer Grading from MRI. In Proceedings of the IEEE/CVF International Conference on Computer Vision (pp. 2616-2624)."
+        
+            Here, we adapt it to utilize the embedding of the transformer's output: Q (and potentially of Q_bar, Q_crocodile, Q_bar_crocodile, as a future extension of this work)
+            To lower the computational burden, we leverage only the 'max' option instead of the 'lehmer' one (possible future extension of this work: utilize lehmer mean).
+        '''
+        super(CausalityMapBlock, self).__init__()
+        
+    def forward(self,x): #(bs,k,n,n)   #e.g. torch.Size([6, 9, 2048])
+        
+        if torch.isnan(x).any():
+            print(f"...the current feature object contains NaN")
+            raise ValueError
+        
+        # print(f"FORWARD Q: min={x.min()}, mean={x.mean()}, max={x.max()}")  
+        if x.min() < 0: #TODO
+            # Calculate the absolute minimum value for each batch
+            min_values, _ = torch.min(x, dim=2)  # Only need the minimum values: Min along embedding dimension (dim=2)
+            min_values = torch.abs(min_values)  # Take the absolute value
+            # Unsqueeze to broadcast the minimum values across the class dimension
+            min_values = min_values.unsqueeze(-1)
+            # Add the minimum values to the tensor to achieve the shift
+            x = x + min_values
+        
+        # print(f"FORWARD Q (shift): min={x.min()}, mean={x.mean()}, max={x.max()}")  
+
+        maximum_values = torch.max(x, dim=2)[0]  # max: (bs,k) (6, 9)
+        MAX_F = torch.max(maximum_values, dim=1)[0]  #MAX: (bs,) (6,) #get the global maximum of the features (strongest activation) for each image in the batch
+        # print(f"FORWARD MAX_F: {MAX_F}")  
+
+        x_div_max=x/(MAX_F.unsqueeze(1).unsqueeze(2) +1e-8) #TODO added epsilon; #implement batch-division: each element of each feature map gets divided by the respective MAX_F of that batch
+        x = torch.nan_to_num(x_div_max, nan = 0.0)
+        # print(f"FORWARD x (divmax): min={x.min()}, mean={x.mean()}, max={x.max()}")  
+
+        #Note: to prevent ill posed divisions and operations, we sometimes add small epsilon (e.g., 1e-8) and nan_to_num() command.
+        sum_values = torch.sum(x, dim=2) # sum: (bs,k) (6, 9)
+        if torch.sum(torch.isnan(sum_values))>0:
+            sum_values = torch.nan_to_num(sum_values,nan=0.0)
+        # print(f"FORWARD sum_values: min={sum_values.min()}, mean={sum_values.mean()}, max={sum_values.max()}")  
+
+        maximum_values = torch.max(x, dim=2)[0]  # max: (bs,k) (6, 9)
+        # print(f"FORWARD maximum_values: min={maximum_values.min()}, mean={maximum_values.mean()}, max={maximum_values.max()}")  
+
+        mtrx = torch.einsum('bi,bj->bij',maximum_values,maximum_values) #batch-wise outer product, the max value of mtrx object is 1.0
+        # print(f"FORWARD mtrx: min={mtrx.min()}, mean={mtrx.mean()}, max={mtrx.max()}")  
+
+        tmp = mtrx/(sum_values.unsqueeze(1) +1e-8) #TODO added epsilon
+        causality_maps = torch.nan_to_num(tmp, nan = 0.0)
+
+        # print(f"causality_maps: min={causality_maps.min()}, mean={causality_maps.mean()}, max={causality_maps.max()}")  
+        return causality_maps
+###################
+
 
 class CROCODILE(nn.Module):
     def __init__(self, backbone, transfomer, num_class,
                  backbone_crocodile=None, transformer_crocodile=None, num_class_crocodile=None,
                  bs=8, backbonename="resnet50", imgsize=448, dropoutrate=0.35,
-                 useCrocodile=True, useContrastiveLoss=True, contrastiveLossSpace="representation"):
+                 useCrocodile=True, useContrastiveLoss=True, contrastiveLossSpace="representation", useCausalityMaps=True):
 
         super().__init__()
         self.backbone = backbone
@@ -156,12 +215,12 @@ class CROCODILE(nn.Module):
 
         self.useContrastiveLoss = useContrastiveLoss
         self.contrastiveLossSpace = contrastiveLossSpace
-        ##
+
+        self.useCausalityMaps = useCausalityMaps
 
         self.backbonename = backbonename
         self.imgsize = imgsize
 
-        # ekernel_size = 3
         self.sigmoid = nn.Sigmoid()
         self.seq = nn.Sequential(
             nn.AdaptiveAvgPool2d(1), 
@@ -195,12 +254,14 @@ class CROCODILE(nn.Module):
         self.drop = nn.Dropout(p=dropoutrate)
         self.fc_confounding = GroupWiseLinear(self.num_class, hidden_dim, bias=True)
 
-        # TODO 8 May 2024
         if self.useCrocodile:
             self.query_embed_crocodile = nn.Embedding(self.num_class_crocodile, hidden_dim)  
             self.fc_crocodile = GroupWiseLinear(self.num_class_crocodile, hidden_dim, bias=True)
             self.fc_add_crocodile = GroupWiseLinear1(self.num_class_crocodile, hidden_dim, bias=True) 
             self.fc_confounding_crocodile = GroupWiseLinear(self.num_class_crocodile, hidden_dim, bias=True)
+
+        if self.useCausalityMaps:
+            self.causality_map_extractor = CausalityMapBlock()
 
     def forward(self, input):
         if torch.isnan(input).any():
@@ -215,7 +276,7 @@ class CROCODILE(nn.Module):
         if torch.isnan(src).any() or torch.isnan(pos).any():
             print("FORWARD - SRC or POS has NaNs")
             raise ValueError        
-        ## Feature Learning block of the Fig.3.####
+        ## Feature Learning block####
         src0 = self.dnet(src) # position- and channel- attention, summed up, to be merged (concatenated) with the other features
         # print(f"src0 (after dnet): {src0.size()}")
         src00 = self.seq(src) #TODO secondo me questo si può anche levare, tanto c'è già la parte di self.att(src)
@@ -264,6 +325,11 @@ class CROCODILE(nn.Module):
             print("FORWARD - z_c (just before returning) has NaNs")
             # raise ValueError
         
+        if self.useCausalityMaps:
+            cmap_Q = self.causality_map_extractor(Q)
+        else:
+            cmap_Q = None
+
         if (self.useCrocodile and self.backbone_crocodile is not None and self.num_class_crocodile is not None and self.transformer_crocodile is not None):
             ###### CROCODILE block: the disease prediction branch
             src_crocodile, pos_crocodile = self.backbone_crocodile(input) # the input xray images pass through the CNN backbone for the domain/dataset predicition and we obtain the 'src' featuremaps, with 'pos' embedding
@@ -304,17 +370,24 @@ class CROCODILE(nn.Module):
             if torch.isnan(z_c_crocodile).any():
                 print("FORWARD - z_c_crocodile (just before returning) has NaNs")
                 # raise ValueError
+        else:
+            z_x_crocodile = z_c_cap_crocodile = z_c_crocodile = Q_crocodile = Q_bar_crocodile=None
 
-        if self.useCrocodile:
-            if self.useContrastiveLoss:  # caumed block + domain/dataset block + contrastiveLosses                      
-                if self.contrastiveLossSpace == "activation":
-                    return z_x, z_c_cap, z_c, z_x_crocodile, z_c_cap_crocodile, z_c_crocodile
-                elif self.contrastiveLossSpace == "representation":
-                    return z_x, z_c_cap, z_c, z_x_crocodile, z_c_cap_crocodile, z_c_crocodile, Q, Q_bar, Q_crocodile, Q_bar_crocodile 
-            else: # caumed block + domain/dataset block
-                return z_x, z_c_cap, z_c, z_x_crocodile, z_c_cap_crocodile, z_c_crocodile
-        else: #just the caumed block
-            return z_x, z_c_cap, z_c
+        # if self.useCrocodile:
+        #     if self.useContrastiveLoss:  # caumed block + domain/dataset block + contrastiveLosses                      
+        #         if self.contrastiveLossSpace == "activation":
+        #             return z_x, z_c_cap, z_c, z_x_crocodile, z_c_cap_crocodile, z_c_crocodile
+        #         elif self.contrastiveLossSpace == "representation":
+        #             if self.useCausalityMaps:
+        #                 return z_x, z_c_cap, z_c, z_x_crocodile, z_c_cap_crocodile, z_c_crocodile, Q, Q_bar, Q_crocodile, Q_bar_crocodile, cmap_Q 
+        #             else:
+        #                 return z_x, z_c_cap, z_c, z_x_crocodile, z_c_cap_crocodile, z_c_crocodile, Q, Q_bar, Q_crocodile, Q_bar_crocodile 
+        #     else: # caumed block + domain/dataset block
+        #         return z_x, z_c_cap, z_c, z_x_crocodile, z_c_cap_crocodile, z_c_crocodile
+        # else: #just the caumed block
+        #     return z_x, z_c_cap, z_c
+        ## TODO:
+        return z_x, z_c_cap, z_c, z_x_crocodile, z_c_cap_crocodile, z_c_crocodile, Q, Q_bar, Q_crocodile, Q_bar_crocodile, cmap_Q
 
     def finetune_paras(self):
         from itertools import chain
@@ -360,6 +433,7 @@ def build_net(args,logger=None):
         useCrocodile=args.useCrocodile, #TODO added
         useContrastiveLoss=args.useContrastiveLoss, #TODO added
         contrastiveLossSpace=args.contrastiveLossSpace, #TODO added
+        useCausalityMaps=args.useCausalityMaps
     )
 
     logger.info("|\t Model created.")
@@ -370,125 +444,3 @@ def build_net(args,logger=None):
 
     
     return model
-
-
-
-
-
-
-
-
-
-
-
-
-## TODO May 2024:############################################
-
-# def build_net_DomainClassifier(args,logger=None):
-#     logger.info("DomainClassifier: Creating the backbone")
-#     backbone = build_backbone(args,logger=logger)
-
-#     logger.info("DomainClassifier:Creating the transformer")
-#     transformer = build_transformer(args)
-
-#     model = DomainClassifier(
-#         backbone=backbone,
-#         transfomer=transformer,
-#         num_class=args.DC_num_class, #the number of different datasets/domains that act as source training environments
-#         bs = int(args.batch_size / dist.get_world_size()),
-#         backbonename=args.backbone,
-#         imgsize=args.img_size,
-#         dropoutrate=args.dropoutrate_randomaddition, #TODO Anyway, we could remove it: for the task of domain/dataset classification,  we could not implement the backdoor adjustment and just consider the _sp and _c features
-#     )
-
-#     logger.info("Created the DomainClassifier (backbone+transformer)")
-
-#     if not args.keep_input_proj:
-#         model.input_proj = nn.Identity()
-#         print("Set model.input_proj to Indentity()! Indeed, this keeps the input projection layer, and this is needed when the channel of image features is different from hidden_dim of Transformer layers.")
-
-#     return model
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class FullyConnectedClassifier(nn.Module):
-  """
-  A simple fully-connected classifier class.
-  """
-  def __init__(self, in_features, hidden_layers, out_features, activation=nn.ReLU):
-    """
-    Args:
-      in_features: Number of input features.
-      hidden_layers: List of hidden layer sizes (number of neurons in each layer).
-      out_features: Number of output features (number of classes).
-      activation: Activation function to use between layers (defaults to ReLU).
-    """
-    super(FullyConnectedClassifier, self).__init__()
-    layers = []
-    # Input layer
-    layers.append(nn.Linear(in_features, hidden_layers[0]))
-    layers.append(activation())
-    # Hidden layers
-    for i in range(1, len(hidden_layers)):
-      layers.append(nn.Linear(hidden_layers[i-1], hidden_layers[i]))
-      layers.append(activation())
-    # Output layer
-    layers.append(nn.Linear(hidden_layers[-1], out_features))
-
-    # Sequential construction of the layers
-    self.classifier = nn.Sequential(*layers)
-
-  def forward(self, x):
-    """
-    Forward pass of the classifier.
-    Args:
-      x: Input tensor.
-    Returns:
-      Output logits of the classifier.
-    """
-    return self.classifier(x)
-
-def build_domain_classifier(args, logger=None):
-  """
-  Builder function to create a FullyConnectedClassifier instance.
-  Returns:
-    An instance of FullyConnectedClassifier.
-  """
-  in_features = args.DC_in_features # Number of input features.
-  hidden_layers = args.DC_hidden_layers # List of hidden layer sizes (number of neurons in each layer)
-  out_features = args.DC_out_features # Number of output features (number of classes)
-  activation = args.DC_activation #Activation function to use between layers (defaults to ReLU)
-
-  logger.info("Building Domain Classifier model (fully connected)")
-
-  return FullyConnectedClassifier(in_features, hidden_layers, out_features, activation)
-
-def build_domain_classifier(args, logger=None):
-    logger.info("Creating the domain/dataset classifier")
-    model = Classifier(
-
-    )
