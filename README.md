@@ -2,7 +2,7 @@
 
 This project is the code base for our [paper](placeholder), where we propose a new deep learning framework to tackle domain shift bias on medical image classifiers.
 
-:computer: Go to [Get started](placeholderline), if you want to use our code straight away. 
+:computer: Go to [Get started](https://github.com/gianlucarloni/crocodile/tree/main#get-started-with-the-coding), if you want to use our code straight away. 
 
 :bulb: Go to [Idea]() to read about the core ideas behind our proposal.
 
