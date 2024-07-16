@@ -1,6 +1,6 @@
 # CROCODILE 🐊: Causality aids RObustness via COntrastive DIsentangled LEarning
 
-This project is the code base for our MICCAI 2024 [paper](placeholder) at the 6th international workshop *Uncertainty for Safe Utilization of Machine Learning in Medical Imaging*. We propose a new deep learning framework to tackle domain shift bias on medical image classifiers and improve their out-of-distribution (OOD) performance, fostering domain generalization (DG).
+This project is the code base for our **MICCAI 2024** [paper](placeholder) at the 6th international workshop **Uncertainty for Safe Utilization of Machine Learning in Medical Imaging** ([UNSURE2024](https://unsuremiccai.github.io/)). We propose a new deep learning framework to tackle domain shift bias on medical image classifiers and improve their out-of-distribution (OOD) performance, fostering domain generalization (DG).
 
 :computer: Go to [Get started](https://github.com/gianlucarloni/crocodile/tree/main#get-started-with-the-coding), if you want to use our code straight away. 
 
@@ -10,7 +10,7 @@ This project is the code base for our MICCAI 2024 [paper](placeholder) at the 6t
 
 ## Abstract
 
-*Due to domain shift, deep learning image classifiers perform poorly when applied to a domain different from the training one. For instance, a classifier trained on chest X-ray (CXR) images from one hospital may not generalize to images from another hospital due to variations in scanner settings or patient characteristics. In this paper, we introduce our CROCODILE framework, showing how tools from causality can foster a model’s robustness to domain shift via feature disentanglement, contrastive learning losses, and the injection of prior knowledge. This way, the model relies less on spurious correlations, learns the mechanism bringing from images to prediction better, and outperforms baselines on out-of-distribution (OOD) data. We apply our method to multi-label lung disease classification from CXRs, utilizing over 750000 images from four datasets. Our bias-mitigation method improves domain generalization and fairness, broadening the applicability and reliability of deep learning models for a safer medical image analysis.*
+*Due to domain shift, deep learning image classifiers perform poorly when applied to a domain different from the training one. For instance, a classifier trained on chest X-ray (CXR) images from one hospital may not generalize to images from another hospital due to variations in scanner settings or patient characteristics. In this paper, we introduce our CROCODILE framework, showing how tools from causality can foster a model’s robustness to domain shift via feature disentanglement, contrastive learning losses, and the injection of prior knowledge. This way, the model relies less on spurious correlations, learns the mechanism bringing from images to prediction better, and outperforms baselines on out-of-distribution (OOD) data. We apply our method to multi-label lung disease classification from CXRs, utilizing over 750000 images from four datasets. Our bias-mitigation method improves domain generalization, broadening the applicability and reliability of deep learning models for a safer medical image analysis.*
 
 ## Impact
 
