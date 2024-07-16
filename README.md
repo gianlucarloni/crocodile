@@ -32,23 +32,20 @@ As you can see, the 'sbatch' command itself launches the other bash script calle
 
 Even if your setup does not include the usage of SLURM-based queues or multi-node multi-gpu experiments, you are still able to utilize our method! Indeed, you just need to install our [:wrench: requirements.txt ](https://github.com/gianlucarloni/crocodile/blob/main/code/requirements.txt) and slightly adapt the main python script (e.g., select a specified GPU device ID, not using SLURM variables, etc.). A tutorial guide on this is in process. Please, bear with us or just try adapting yourself. If encountering any issues or if you just want some curiosities clarified, open an Issue on this project or e-mail me (address can be found on the paper).
 
-### Baseline
-
-## Acknowledgement 
-
-Some previous implementations and codes inspired us to develop this project and served as a basis for the present code to a varying extent:
-- Transformer and backdoor general idea from this zc2024's [preliminary code](https://github.com/zc2024/Causal_CXR)
-- Causal Medimg from my previous [repo](https://github.com/gianlucarloni/causal_medimg),
-- _Causality map_ and _Causality factor extractor_ from our previous work [(Carloni et al., 2024)](https://doi.org/10.1016/j.eswa.2024.123433) and repo [gianlucarloni/causality_conv_nets](https://github.com/gianlucarloni/causality_conv_nets).
-- Multi-node multi-gpu, data parallelism, and distributed training from this [gist.github.com](https://gist.github.com/TengdaHan/1dd10d335c7ca6f13810fff41e809904), and this [www.idris.fr](http://www.idris.fr/eng/jean-zay/gpu/jean-zay-gpu-torch-multi-eng.html). 
-
-We also acknowledge the CINECA award under the ISCRA initiative, for the availability of high-performance computing resources and support.
-
 ## Cite
 
-Please cite our [paper](placeholder) if you found this code useful for your research:
+Please cite our [paper](placeholder) and star this repo if you found this code useful for your research:
 
 ```
 @article{carloni2024,
 }
 ```
+
+### 
+*Acknowledgement*. Some previous implementations and codes inspired us to develop this project and served as a basis for the present code to a varying extent:
+- Transformer and backdoor general idea from this zc2024's [preliminary code](https://github.com/zc2024/Causal_CXR)
+- Causal Medimg from my previous [repo](https://github.com/gianlucarloni/causal_medimg),
+- _Causality map_ and _Causality factor extractor_ from our previous work [(Carloni et al., 2024)](https://doi.org/10.1016/j.eswa.2024.123433) and repo [gianlucarloni/causality_conv_nets](https://github.com/gianlucarloni/causality_conv_nets).
+- Multi-node multi-gpu, data parallelism, and distributed training from this [gist.github.com](https://gist.github.com/TengdaHan/1dd10d335c7ca6f13810fff41e809904) and this [www.idris.fr](http://www.idris.fr/eng/jean-zay/gpu/jean-zay-gpu-torch-multi-eng.html). 
+
+We also acknowledge the CINECA award under the ISCRA initiative, for the availability of high-performance computing resources and support.
