@@ -30,10 +30,7 @@ As you can see, the 'sbatch' command itself launches the other bash script calle
 
 ### Note
 
-Even if your setup does not include the usage of SLURM-based queues or multi-node multi-gpu experiments, you are still able to utilize our method! Indeed, you just need to ...
-
-
-:wrench: Requirements 
+Even if your setup does not include the usage of SLURM-based queues or multi-node multi-gpu experiments, you are still able to utilize our method! Indeed, you just need to install our [:wrench: requirements.txt ](https://github.com/gianlucarloni/crocodile/blob/main/code/requirements.txt) and slightly adapt the main python script (e.g., select a specified GPU device ID, not using SLURM variables, etc.). A tutorial guide on this is in process. Please, bear with us or just try adapting yourself. If encountering any issues or if you just want some curiosities clarified, open an Issue on this project or e-mail me (address can be found on the paper).
 
 ### Baseline
 
