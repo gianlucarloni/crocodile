@@ -1,12 +1,12 @@
 # CROCODILE 🐊: Causality aids RObustness via COntrastive DIsentangled LEarning
 
-This project is the code base for our [paper](placeholder), where we propose a new deep learning framework to tackle domain shift bias on medical image classifiers.
+This project is the code base for our MICCAI 2024 [paper](placeholder) at the 6th international workshop *Uncertainty for Safe Utilization of Machine Learning in Medical Imaging*. We propose a new deep learning framework to tackle domain shift bias on medical image classifiers and improve their out-of-distribution (OOD) performance, fostering domain generalization (DG).
 
 :computer: Go to [Get started](https://github.com/gianlucarloni/crocodile/tree/main#get-started-with-the-coding), if you want to use our code straight away. 
 
 :bulb: Go to [Idea](https://github.com/gianlucarloni/crocodile/tree/main?tab=readme-ov-file#idea) to read about the core ideas behind our proposal.
 
-:star: Go to [Cite](https://github.com/gianlucarloni/crocodile/tree/main?tab=readme-ov-file#cite) to get the citation format for our work, if you have found it useful for you research
+:star: Go to [Cite](https://github.com/gianlucarloni/crocodile/tree/main?tab=readme-ov-file#cite) to get our citation format to include in your work, if you've found it useful.
 
 ## Abstract
 
