@@ -1,6 +1,6 @@
 # CROCODILE 🐊: Causality aids RObustness via COntrastive DIsentangled LEarning
 
-This project is the code base for our **MICCAI 2024** [paper](placeholder) at the 6th international workshop **Uncertainty for Safe Utilization of Machine Learning in Medical Imaging** ([UNSURE2024](https://unsuremiccai.github.io/)). We propose a new deep learning framework to tackle domain shift bias on medical image classifiers and improve their out-of-distribution (OOD) performance, fostering domain generalization (DG).
+This project is the code base for our **MICCAI 2024** paper at the 6th international workshop **Uncertainty for Safe Utilization of Machine Learning in Medical Imaging** ([UNSURE2024](https://unsuremiccai.github.io/)). We propose a new deep learning framework to tackle domain shift bias on medical image classifiers and improve their out-of-distribution (OOD) performance, fostering domain generalization (DG).
 
 :computer: Go to [Get started](https://github.com/gianlucarloni/crocodile/tree/main#get-started-with-the-coding), if you want to use our code straight away. 
 
@@ -17,9 +17,7 @@ This project is the code base for our **MICCAI 2024** [paper](placeholder) at th
 *The results of our in-distribution (ID) and out-of-distribution (OOD) data investigations reveal our method is behind its ablated versions and the competing method on i.i.d. data (ID) while is the best-performing model on the external never-before-seen data (OOD). This important result points to a necessary trade-off between in-domain accuracy and out-of-domain robustness on real-world data, supporting recent work. Notably, our method is the most effective in reducing the ID-to-OOD drop in performance. By leveraging causal tools, disentanglement, contrastive learning, and prior knowledge, it learns a better mechanism from image to prediction, relies less on spurious correlations, and breaks the boundaries across domains. Our bias-mitigation proposal is general and can be applied to tackle domain shift bias in other computer-aided diagnosis applications, fostering a safer and more generalizable medical AI.*
 
 ## Idea
-As its acronym suggests, with our method we make the following contributions:
-
-:hammer: latent causal intervention
+(work in progress)
 
 ## Get started with the coding
 
@@ -34,8 +32,9 @@ Even if your setup does not include the usage of SLURM-based queues or multi-nod
 
 ## Cite
 
-Please cite our [paper](placeholder) and star this repo if you found this code useful for your research:
+If you found this code useful for your research, please cite our paper and star this repo. 
 
+(work in progress): will update citation upon publication
 ```
 @article{carloni2024,
 }
