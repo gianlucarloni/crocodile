@@ -34,9 +34,13 @@ Even if your setup does not include the usage of SLURM-based queues or multi-nod
 
 If you found this code useful for your research, please cite our paper and star this repo. 
 
-(work in progress): will update citation upon publication
+(work in progress): You can already access our preprint on ArXiv, although it is the Submitted Manuscript (pre peer-review). I will update citation upon publication of the final, camera-ready version of our paper, where we were given one extra page and improved the details and discussion about our methods and findings.
 ```
-@article{carloni2024,
+@article{carloni2024crocodile,
+  title={CROCODILE: Causality aids RObustness via COntrastive DIsentangled LEarning},
+  author={Carloni, Gianluca and Tsaftaris, Sotirios A and Colantonio, Sara},
+  journal={arXiv preprint arXiv:2408.04949},
+  year={2024}
 }
 ```
 
