@@ -4,8 +4,6 @@ This project is the code base for our [**MICCAI 2024 paper**](https://arxiv.org/
 
 :computer: Go to [Get started](https://github.com/gianlucarloni/crocodile/tree/main#get-started-with-the-coding), if you want to use our code straight away. 
 
-:bulb: Go to [Idea](https://github.com/gianlucarloni/crocodile/tree/main?tab=readme-ov-file#idea) to read about the core ideas behind our proposal.
-
 :star: Go to [Cite](https://github.com/gianlucarloni/crocodile/tree/main?tab=readme-ov-file#cite) to get our citation format to include in your work, if you've found it useful.
 
 ## Abstract
@@ -15,9 +13,6 @@ This project is the code base for our [**MICCAI 2024 paper**](https://arxiv.org/
 ## Impact
 
 *The results of our in-distribution (ID) and out-of-distribution (OOD) data investigations reveal our method is behind its ablated versions and the competing method on i.i.d. data (ID) while is the best-performing model on the external never-before-seen data (OOD). This important result points to a necessary trade-off between in-domain accuracy and out-of-domain robustness on real-world data, supporting recent work. Notably, our method is the most effective in reducing the ID-to-OOD drop in performance. By leveraging causal tools, disentanglement, contrastive learning, and prior knowledge, it learns a better mechanism from image to prediction, relies less on spurious correlations, and breaks the boundaries across domains. Our bias-mitigation proposal is general and can be applied to tackle domain shift bias in other computer-aided diagnosis applications, fostering a safer and more generalizable medical AI.*
-
-## Idea
-(work in progress)
 
 ## Get started with the coding
 
