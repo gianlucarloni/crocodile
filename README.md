@@ -27,16 +27,10 @@ Even if your setup does not include the usage of SLURM-based queues or multi-nod
 
 ## Cite
 
-If you found this code useful for your research, please cite our paper and star this repo. 
+If you found this code useful for your research, please cite our paper and star this repo ☺️ 
 
-(work in progress): You can already access our preprint on ArXiv, although it is the Submitted Manuscript (pre peer-review). I will update citation upon publication of the final, camera-ready version of our paper, where we were given one extra page and improved the details and discussion about our methods and findings.
 ```
-@article{carloni2024crocodile,
-  title={CROCODILE: Causality aids RObustness via COntrastive DIsentangled LEarning},
-  author={Carloni, Gianluca and Tsaftaris, Sotirios A and Colantonio, Sara},
-  journal={arXiv preprint arXiv:2408.04949},
-  year={2024}
-}
+Carloni, G., Tsaftaris, S.A., Colantonio, S. (2025). CROCODILE: Causality Aids RObustness via COntrastive DIsentangled LEarning. In: Sudre, C.H., Mehta, R., Ouyang, C., Qin, C., Rakic, M., Wells, W.M. (eds) Uncertainty for Safe Utilization of Machine Learning in Medical Imaging. UNSURE 2024. Lecture Notes in Computer Science, vol 15167. Springer, Cham. https://doi.org/10.1007/978-3-031-73158-7_10
 ```
 
 ### 
