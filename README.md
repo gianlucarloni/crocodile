@@ -1,6 +1,6 @@
 # CROCODILE 🐊: Causality aids RObustness via COntrastive DIsentangled LEarning
 
-This project is the code base for our [**MICCAI 2024 paper**](https://arxiv.org/abs/2408.04949) at the 6th international workshop **Uncertainty for Safe Utilization of Machine Learning in Medical Imaging** ([UNSURE2024](https://unsuremiccai.github.io/)). We propose a new deep learning framework to tackle domain shift bias on medical image classifiers and improve their out-of-distribution (OOD) performance, fostering domain generalization (DG).
+This project is the code base for our [**MICCAI 2024 paper**](https://doi.org/10.1007/978-3-031-73158-7_10) at the 6th international workshop **Uncertainty for Safe Utilization of Machine Learning in Medical Imaging** ([UNSURE2024](https://unsuremiccai.github.io/)). We propose a new deep learning framework to tackle domain shift bias on medical image classifiers and improve their out-of-distribution (OOD) performance, fostering domain generalization (DG).
 
 :computer: Go to [Get started](https://github.com/gianlucarloni/crocodile/tree/main#get-started-with-the-coding), if you want to use our code straight away. 
 
@@ -30,7 +30,15 @@ Even if your setup does not include the usage of SLURM-based queues or multi-nod
 If you found this code useful for your research, please cite our paper and star this repo ☺️ 
 
 ```
-Carloni, G., Tsaftaris, S.A., Colantonio, S. (2025). CROCODILE: Causality Aids RObustness via COntrastive DIsentangled LEarning. In: Sudre, C.H., Mehta, R., Ouyang, C., Qin, C., Rakic, M., Wells, W.M. (eds) Uncertainty for Safe Utilization of Machine Learning in Medical Imaging. UNSURE 2024. Lecture Notes in Computer Science, vol 15167. Springer, Cham. https://doi.org/10.1007/978-3-031-73158-7_10
+@inproceedings{carloni2024crocodile,
+  title={CROCODILE: Causality aids RObustness via COntrastive DIsentangled LEarning},
+  author={Carloni, Gianluca and Tsaftaris, Sotirios A and Colantonio, Sara},
+  booktitle={International Workshop on Uncertainty for Safe Utilization of Machine Learning in Medical Imaging},
+  pages={105--116},
+  year={2024},
+  organization={Springer},
+  doi={https://doi.org/10.1007/978-3-031-73158-7_10}
+}
 ```
 
 ### 
